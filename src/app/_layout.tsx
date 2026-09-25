@@ -32,15 +32,13 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="new-note" />
-        <Stack.Screen name="edit-note" />
-        <Stack.Screen name="new-snippet" />
-        <Stack.Screen name="edit-snippet" />
-      </Stack>
+      <Stack screenOptions={{ headerShown: false }} />
 
-      <StatusBar hidden />
+      <StatusBar
+        hidden
+        translucent
+        backgroundColor="transparent"
+      />
     </>
   );
 }
@@ -64,7 +62,6 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
       <ThemeProvider>
         <ErrorBoundary>
           <QueryClientProvider client={queryClient}>
@@ -80,6 +77,5 @@ export default function RootLayout() {
           </QueryClientProvider>
         </ErrorBoundary>
       </ThemeProvider>
-    </SafeAreaProvider>
   );
 }
