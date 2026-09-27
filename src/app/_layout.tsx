@@ -1,4 +1,9 @@
-import React, { useEffect } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+
 import {
   QueryClient,
   QueryClientProvider,
@@ -7,7 +12,9 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { SplashScreen } from '@/components/SplashScreen';
 
 import {
   Inter_400Regular,
@@ -18,21 +25,25 @@ import {
 } from '@expo-google-fonts/inter';
 
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import * as NativeSplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { NotesProvider } from '@/context/notes';
 import { SnippetsProvider } from '@/context/snippets';
 import { ThemeProvider } from '@/context/theme';
 
-SplashScreen.preventAutoHideAsync();
+void NativeSplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
 
       <StatusBar
         hidden
@@ -44,38 +55,56 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
+  const [fontsLoaded, fontError] =
+    useFonts({
+      Inter_400Regular,
+      Inter_500Medium,
+      Inter_600SemiBold,
+      Inter_700Bold,
+    });
+
+  const [showSplash, setShowSplash] =
+    useState(true);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+      void NativeSplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  const finishSplash = useCallback(() => {
+    setShowSplash(false);
+  }, []);
 
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
-      <ThemeProvider>
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <KeyboardProvider>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <GestureHandlerRootView
+            style={{ flex: 1 }}
+          >
+            <KeyboardProvider>
+              <SafeAreaProvider>
                 <NotesProvider>
                   <SnippetsProvider>
-                    <RootLayoutNav />
+                    {showSplash ? (
+                      <SplashScreen
+                        onFinish={finishSplash}
+                      />
+                    ) : (
+                      <RootLayoutNav />
+                    )}
                   </SnippetsProvider>
                 </NotesProvider>
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </QueryClientProvider>
-        </ErrorBoundary>
-      </ThemeProvider>
+              </SafeAreaProvider>
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }

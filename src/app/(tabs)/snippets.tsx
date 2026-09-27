@@ -59,7 +59,7 @@ export default function SnippetsScreen() {
     );
 
     router.push({
-      pathname: '/edit-snippet',
+      pathname: '/view-snippet',
       params: { id },
     });
   };

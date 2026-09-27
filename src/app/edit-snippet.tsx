@@ -1,9 +1,12 @@
 import * as Haptics from 'expo-haptics';
+
 import {
   useLocalSearchParams,
   useRouter,
 } from 'expo-router';
+
 import { useState } from 'react';
+
 import {
   ActivityIndicator,
   Alert,
@@ -16,10 +19,12 @@ import {
 import { Button } from '@/components/Button';
 import { CodeBlock } from '@/components/CodeBlock';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+
 import {
   FormLabel,
   FormScreen,
 } from '@/components/FormScreen';
+
 import { Input } from '@/components/Input';
 import { LanguagePicker } from '@/components/LanguagePicker';
 
@@ -141,13 +146,16 @@ function EditSnippetForm({
   onTogglePin,
 }: {
   snippet: Snippet;
+
   onDelete: (id: string) => void;
+
   onSave: (
     id: string,
     title: string,
     code: string,
     language: SnippetLanguage,
   ) => void;
+
   onTogglePin: (id: string) => void;
 }) {
   const router = useRouter();
@@ -209,7 +217,7 @@ function EditSnippetForm({
     );
 
     onDelete(snippet.id);
-    router.back();
+    router.push("/(tabs)/snippets")
   };
 
   const confirmDelete = () => {
@@ -229,8 +237,7 @@ function EditSnippetForm({
         {
           text: 'Delete',
           style: 'destructive',
-          onPress:
-            deleteCurrentSnippet,
+          onPress: deleteCurrentSnippet,
         },
       ],
       {
@@ -285,13 +292,13 @@ function EditSnippetForm({
           variant="code"
         />
 
-        {code.trim().length > 0 && (
+        {/* {code.trim().length > 0 && (
           <CodeBlock
             code={code}
             language={language}
             numberOfLines={8}
           />
-        )}
+        )} */}
 
         <Button
           accessibilityLabel="Save snippet changes"

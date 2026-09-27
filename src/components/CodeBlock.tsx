@@ -33,7 +33,7 @@ export function CodeBlock({
         styles.container,
         {
           backgroundColor:
-            colors.secondary,
+          colors.secondary,
           borderColor: colors.border,
         },
       ]}
@@ -92,7 +92,7 @@ export function CodeBlock({
           </Pressable>
         )}
       </View>
-
+        
       <SyntaxHighlightedCode
         code={code}
         language={language}
