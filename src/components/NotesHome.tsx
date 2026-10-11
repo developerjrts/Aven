@@ -1,30 +1,30 @@
-import { Feather } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import {
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Card } from '@/components/Card';
-import { Input } from '@/components/Input';
-import { RichTextPreview } from '@/components/RichTextPreview';
-import { Typography } from '@/components/Typography';
-import { useNotes } from '@/context/notes';
-import { useColors } from '@/hooks/useColors';
-import { commonStyles } from '@/styles/common';
+import { Card } from "@/components/Card";
+import { Input } from "@/components/Input";
+import { RichTextPreview } from "@/components/RichTextPreview";
+import { Typography } from "@/components/Typography";
+import { useNotes } from "@/context/notes";
+import { useColors } from "@/hooks/useColors";
+import { commonStyles } from "@/styles/common";
 
 export default function NotesHome() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { notes } = useNotes();
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
   const orderedNotes = useMemo(
     () =>
@@ -48,12 +48,12 @@ export default function NotesHome() {
 
   const openNote = (id: string) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push({ pathname: '/edit-note', params: { id } });
+    router.push({ pathname: "/edit-note", params: { id } });
   };
 
   const openNewNote = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/new-note');
+    router.push("/new-note");
   };
 
   return (
@@ -62,8 +62,8 @@ export default function NotesHome() {
         styles.container,
         {
           backgroundColor: colors.background,
-          paddingTop: insets.top + (Platform.OS === 'web' ? 67 : 0),
-          paddingBottom: insets.bottom + (Platform.OS === 'web' ? 34 : 0),
+          paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0),
+          paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0),
         },
       ]}
     >
@@ -93,7 +93,7 @@ export default function NotesHome() {
           <Pressable
             accessibilityLabel="Clear search"
             accessibilityRole="button"
-            onPress={() => setSearchQuery('')}
+            onPress={() => setSearchQuery("")}
             style={styles.clearSearchButton}
             testID="clear-search-button"
           >
@@ -103,15 +103,9 @@ export default function NotesHome() {
       </View>
 
       {notes.length === 0 ? (
-        <EmptyState
-          icon="file-text"
-          message="No notes yet"
-        />
+        <EmptyState icon="file-text" message="No notes yet" />
       ) : filteredNotes.length === 0 ? (
-        <EmptyState
-          icon="search"
-          message="No notes match your search"
-        />
+        <EmptyState icon="search" message="No notes match your search" />
       ) : (
         <ScrollView
           contentContainerStyle={styles.notesList}
@@ -163,7 +157,7 @@ function EmptyState({
   icon,
   message,
 }: {
-  icon: 'file-text' | 'search';
+  icon: "file-text" | "search";
   message: string;
 }) {
   const colors = useColors();
@@ -190,21 +184,21 @@ const styles = StyleSheet.create({
   clearSearchButton: {
     width: 30,
     height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   notesList: { paddingTop: 30, paddingBottom: 120, gap: 12 },
   noteContent: {
     marginTop: 7,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 24,
     bottom: 84,
     width: 58,
     height: 58,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 29,
     elevation: 5,
   },
