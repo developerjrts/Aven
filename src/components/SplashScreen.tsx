@@ -1,132 +1,173 @@
-import { Feather } from '@expo/vector-icons';
-import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Feather } from "@expo/vector-icons";
+import { useEffect, useRef } from "react";
+import { Animated, Text, View } from "react-native";
 
-import { useColors } from '@/hooks/useColors';
+import { useColors } from "@/hooks/useColors";
 
 type SplashScreenProps = {
   onFinish: () => void;
 };
 
-export function SplashScreen({
-  onFinish,
-}: SplashScreenProps) {
+export function SplashScreen({ onFinish }: SplashScreenProps) {
   const colors = useColors();
 
-  const opacity = useRef(
-    new Animated.Value(0),
-  ).current;
-
-  const scale = useRef(
-    new Animated.Value(0.85),
-  ).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.85)).current;
+  const developerOpacity = useRef(new Animated.Value(0)).current;
+  const developerTranslateY = useRef(new Animated.Value(12)).current;
 
   useEffect(() => {
-    Animated.parallel([
+    const entranceAnimation = Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
         duration: 450,
         useNativeDriver: true,
       }),
-
       Animated.spring(scale, {
         toValue: 1,
         friction: 7,
         tension: 45,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]);
 
-    const timer = setTimeout(() => {
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 300,
+    const developerAnimation = Animated.parallel([
+      Animated.timing(developerOpacity, {
+        toValue: 1,
+        duration: 500,
         useNativeDriver: true,
-      }).start(() => {
-        onFinish();
+      }),
+      Animated.spring(developerTranslateY, {
+        toValue: 0,
+        friction: 7,
+        tension: 50,
+        useNativeDriver: true,
+      }),
+    ]);
+
+    entranceAnimation.start();
+
+    const developerTimer = setTimeout(() => {
+      developerAnimation.start();
+    }, 500);
+
+    const finishTimer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(developerOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) {
+          onFinish();
+        }
       });
-    }, 1400);
+    }, 2200);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(developerTimer);
+      clearTimeout(finishTimer);
+      entranceAnimation.stop();
+      developerAnimation.stop();
     };
-  }, [opacity, scale, onFinish]);
+  }, [opacity, scale, developerOpacity, developerTranslateY, onFinish]);
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor:
-            colors.background,
-        },
-      ]}
+      className="flex-1 items-center justify-center"
+      style={{ backgroundColor: colors.background }}
     >
       <Animated.View
-        style={[
-          styles.content,
-          {
-            opacity,
-            transform: [{ scale }],
-          },
-        ]}
+        className="items-center px-6"
+        style={{
+          opacity,
+          transform: [{ scale }],
+        }}
       >
         <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor:
-                colors.secondary,
-              borderColor:
-                colors.border,
-            },
-          ]}
+          className="mb-[22px] h-[82px] w-[82px] items-center justify-center rounded-[22px] border"
+          style={{
+            backgroundColor: colors.secondary,
+            borderColor: colors.border,
+          }}
         >
-          <Feather
-            name="edit-3"
-            size={34}
-            color={colors.primary}
-          />
+          <Feather name="edit-3" size={34} color={colors.primary} />
         </View>
 
         <Text
-          style={[
-            styles.title,
-            {
-              color: colors.foreground,
-            },
-          ]}
+          className="text-center text-[27px]"
+          style={{
+            color: colors.foreground,
+            fontFamily: "Inter_700Bold",
+            letterSpacing: -0.5,
+          }}
         >
           Aven Notes
         </Text>
 
         <Text
-          style={[
-            styles.subtitle,
-            {
-              color:
-                colors.mutedForeground,
-            },
-          ]}
+          className="mt-2 text-center text-[13px]"
+          style={{
+            color: colors.mutedForeground,
+            fontFamily: "Inter_400Regular",
+          }}
         >
           Capture. Organize. Remember.
         </Text>
+
+        <Animated.View
+          className="mt-9 flex-row items-center justify-center"
+          style={{
+            opacity: developerOpacity,
+            transform: [{ translateY: developerTranslateY }],
+          }}
+        >
+          <View
+            className="mr-3 h-[2px] w-5 rounded-full"
+            style={{ backgroundColor: colors.primary }}
+          />
+
+          <Text
+            className="text-center text-[12px]"
+            style={{
+              color: colors.primary,
+              fontFamily: "Inter_600SemiBold",
+              letterSpacing: 0.2,
+            }}
+          >
+            Developer JRTS
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontFamily: "Inter_400Regular",
+              }}
+            >
+              {" — "}
+            </Text>
+            I create emotions
+          </Text>
+
+          <View
+            className="ml-3 h-[2px] w-5 rounded-full"
+            style={{ backgroundColor: colors.primary }}
+          />
+        </Animated.View>
       </Animated.View>
 
-      <View style={styles.bottom}>
+      <View className="absolute bottom-[38px] items-center">
         <Text
-          style={[
-            styles.version,
-            {
-              color:
-                colors.mutedForeground,
-            },
-          ]}
+          className="text-[11px]"
+          style={{
+            color: colors.mutedForeground,
+            fontFamily: "Inter_500Medium",
+            letterSpacing: 0.5,
+          }}
         >
           Aven Notes
         </Text>
@@ -134,48 +175,3 @@ export function SplashScreen({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  content: {
-    alignItems: 'center',
-  },
-
-  iconContainer: {
-    alignItems: 'center',
-    borderRadius: 22,
-    borderWidth: 1,
-    height: 82,
-    justifyContent: 'center',
-    marginBottom: 22,
-    width: 82,
-  },
-
-  title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 27,
-    letterSpacing: -0.5,
-  },
-
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    marginTop: 8,
-  },
-
-  bottom: {
-    bottom: 38,
-    position: 'absolute',
-  },
-
-  version: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-});

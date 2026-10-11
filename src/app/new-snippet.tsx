@@ -1,39 +1,26 @@
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 
-import { Button } from '@/components/Button';
-import { CodeBlock } from '@/components/CodeBlock';
-import {
-  FormLabel,
-  FormScreen,
-} from '@/components/FormScreen';
-import { Input } from '@/components/Input';
-import { LanguagePicker } from '@/components/LanguagePicker';
-
-import {
-  type SnippetLanguage,
-  useSnippets,
-} from '@/context/snippets';
+import { Button } from "@/components/Button";
+import { CodeBlock } from "@/components/CodeBlock";
+import { FormLabel, FormScreen } from "@/components/FormScreen";
+import { Input } from "@/components/Input";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { type SnippetLanguage, useSnippets } from "@/context/snippets";
 
 export default function NewSnippetScreen() {
   const router = useRouter();
-
   const { addSnippet } = useSnippets();
 
-  const [title, setTitle] = useState('');
-  const [code, setCode] = useState('');
-  const [language, setLanguage] =
-    useState<SnippetLanguage>('javascript');
+  const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
+  const [language, setLanguage] = useState<SnippetLanguage>("javascript");
 
-  const canSave =
-    title.trim().length > 0 &&
-    code.trim().length > 0;
+  const canSave = title.trim().length > 0 && code.trim().length > 0;
 
   const goBack = () => {
-    void Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light,
-    );
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     router.back();
   };
@@ -43,15 +30,9 @@ export default function NewSnippetScreen() {
       return;
     }
 
-    void Haptics.notificationAsync(
-      Haptics.NotificationFeedbackType.Success,
-    );
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    addSnippet(
-      title.trim(),
-      code.trim(),
-      language,
-    );
+    addSnippet(title.trim(), code.trim(), language);
 
     router.back();
   };
@@ -75,10 +56,7 @@ export default function NewSnippetScreen() {
 
       <FormLabel>Language</FormLabel>
 
-      <LanguagePicker
-        onChange={setLanguage}
-        value={language}
-      />
+      <LanguagePicker onChange={setLanguage} value={language} />
 
       <FormLabel>Code</FormLabel>
 
@@ -95,11 +73,7 @@ export default function NewSnippetScreen() {
       />
 
       {code.trim().length > 0 && (
-        <CodeBlock
-          code={code}
-          language={language}
-          numberOfLines={8}
-        />
+        <CodeBlock code={code} language={language} numberOfLines={8} />
       )}
 
       <Button

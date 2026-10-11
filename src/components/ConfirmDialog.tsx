@@ -1,7 +1,6 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from "react-native";
 
-import { useColors } from '@/hooks/useColors';
-import { commonStyles } from '@/styles/common';
+import { useColors } from "@/hooks/useColors";
 
 export function ConfirmDialog({
   cancelTestID,
@@ -29,51 +28,69 @@ export function ConfirmDialog({
       transparent
       visible={visible}
     >
-      <View style={commonStyles.dialogOverlay}>
+      <View className="flex-1 items-center justify-center bg-black/30 px-6">
         <View
-          style={[
-            commonStyles.dialog,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
+          className="w-full max-w-[360px] rounded-[22px] border px-5 pb-[18px] pt-[22px]"
+          style={{
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }}
         >
-          <Text style={[commonStyles.dialogTitle, { color: colors.foreground }]}>
+          <Text
+            className="text-xl font-semibold"
+            style={{
+              fontFamily: "Inter_600SemiBold",
+              color: colors.foreground,
+            }}
+          >
             {title}
           </Text>
+
           <Text
-            style={[
-              commonStyles.dialogMessage,
-              { color: colors.mutedForeground },
-            ]}
+            className="mt-2 text-[15px] leading-[22px]"
+            style={{
+              fontFamily: "Inter_400Regular",
+              color: colors.mutedForeground,
+            }}
           >
             {message}
           </Text>
-          <View style={commonStyles.dialogActions}>
+
+          <View className="mt-[22px] flex-row gap-[10px]">
             <Pressable
               accessibilityLabel="Cancel deletion"
               accessibilityRole="button"
               onPress={onCancel}
-              style={({ pressed }) => [
-                commonStyles.dialogAction,
-                commonStyles.dialogCancelAction,
-                { borderColor: colors.border },
-                pressed && commonStyles.pressed,
-              ]}
+              className="min-h-[46px] flex-1 items-center justify-center rounded-[13px] border active:opacity-[0.78] active:scale-[0.98]"
+              style={{ borderColor: colors.border }}
               testID={cancelTestID}
             >
-              <Text style={{ color: colors.foreground }}>Cancel</Text>
+              <Text
+                style={{
+                  fontFamily: "Inter_400Regular",
+                  color: colors.foreground,
+                }}
+              >
+                Cancel
+              </Text>
             </Pressable>
+
             <Pressable
               accessibilityLabel="Confirm delete"
               accessibilityRole="button"
               onPress={onConfirm}
-              style={({ pressed }) => [
-                commonStyles.dialogAction,
-                { backgroundColor: colors.destructive },
-                pressed && commonStyles.pressed,
-              ]}
+              className="min-h-[46px] flex-1 items-center justify-center rounded-[13px] active:opacity-[0.78] active:scale-[0.98]"
+              style={{ backgroundColor: colors.destructive }}
               testID={confirmTestID}
             >
-              <Text style={{ color: colors.destructiveForeground }}>Delete</Text>
+              <Text
+                style={{
+                  fontFamily: "Inter_400Regular",
+                  color: colors.destructiveForeground,
+                }}
+              >
+                Delete
+              </Text>
             </Pressable>
           </View>
         </View>

@@ -1,13 +1,8 @@
-import { Highlight, themes } from 'prism-react-renderer';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Highlight, themes } from "prism-react-renderer";
+import { ScrollView, Text, View } from "react-native";
 
-import { type SnippetLanguage } from '@/context/snippets';
-import { useColors } from '@/hooks/useColors';
+import { type SnippetLanguage } from "@/context/snippets";
+import { useColors } from "@/hooks/useColors";
 
 interface SyntaxHighlightedCodeProps {
   code: string;
@@ -16,35 +11,24 @@ interface SyntaxHighlightedCodeProps {
 }
 
 type PrismLanguage =
-  | 'javascript'
-  | 'typescript'
-  | 'python'
-  | 'bash'
-  | 'json'
-  | 'text';
+  | "javascript"
+  | "typescript"
+  | "python"
+  | "bash"
+  | "json"
+  | "text";
 
-function getPrismLanguage(
-  language: SnippetLanguage,
-): PrismLanguage {
+function getPrismLanguage(language: SnippetLanguage): PrismLanguage {
   switch (language) {
-    case 'javascript':
-      return 'javascript';
+    case "javascript":
+    case "typescript":
+    case "python":
+    case "bash":
+    case "json":
+      return language;
 
-    case 'typescript':
-      return 'typescript';
-
-    case 'python':
-      return 'python';
-
-    case 'bash':
-      return 'bash';
-
-    case 'json':
-      return 'json';
-
-    case 'plaintext':
     default:
-      return 'text';
+      return "text";
   }
 }
 
@@ -55,29 +39,20 @@ export function SyntaxHighlightedCode({
 }: SyntaxHighlightedCodeProps) {
   const colors = useColors();
 
-  const prismLanguage =
-    getPrismLanguage(language);
-
-  const codeLines = code.split('\n');
+  const prismLanguage = getPrismLanguage(language);
+  const codeLines = code.split("\n");
 
   const visibleLines =
-    numberOfLines === undefined
-      ? codeLines
-      : codeLines.slice(0, numberOfLines);
+    numberOfLines === undefined ? codeLines : codeLines.slice(0, numberOfLines);
 
-  const visibleCode =
-    visibleLines.join('\n');
+  const visibleCode = visibleLines.join("\n");
 
-  /*
-   * Start with VS Code's dark theme, then adapt
-   * the editor background to Aven's theme.
-   */
   const theme = {
     ...themes.vsDark,
     plain: {
       ...themes.vsDark.plain,
       backgroundColor: colors.secondary,
-      fontFamily: 'monospace',
+      fontFamily: "monospace",
       fontSize: 13,
       lineHeight: 20,
     },
@@ -85,80 +60,58 @@ export function SyntaxHighlightedCode({
 
   return (
     <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ flexGrow: 1 }}
     >
       <View
-        style={[
-          styles.editor,
-          {
-            backgroundColor:
-              colors.secondary,
-          },
-        ]}
+        className="w-full px-1 py-3"
+        style={{ backgroundColor: colors.secondary }}
       >
-        <Highlight
-          code={visibleCode}
-          language={prismLanguage}
-          theme={theme}
-        >
-          {({
-            tokens,
-            getLineProps,
-            getTokenProps,
-          }) => (
-            <View>
+        <Highlight code={visibleCode} language={prismLanguage} theme={theme}>
+          {({ tokens, getLineProps, getTokenProps }) => (
+            <View className="w-full">
               {tokens.map((line, lineIndex) => {
-                const lineProps =
-                  getLineProps({
-                    line,
-                  });
+                const lineProps = getLineProps({ line });
 
                 return (
                   <View
                     key={lineIndex}
                     {...lineProps}
-                    style={styles.line}
+                    className="min-h-5 w-full flex-row"
                   >
                     <Text
-                      style={[
-                        styles.lineNumber,
-                        {
-                          color:
-                            colors.mutedForeground,
-                        },
-                      ]}
+                      className="w-9 shrink-0 pr-[10px] text-right text-xs"
+                      style={{
+                        color: colors.mutedForeground,
+                        fontFamily: "monospace",
+                        lineHeight: 20,
+                        opacity: 0.55,
+                      }}
                     >
                       {lineIndex + 1}
                     </Text>
 
                     <Text
-                      style={[
-                        styles.codeText,
-                        {
-                          color:
-                            colors.foreground,
-                        },
-                      ]}
+                      className="flex-1 text-[13px]"
+                      style={{
+                        color: colors.foreground,
+                        fontFamily: "monospace",
+                        lineHeight: 20,
+                        flexShrink: 1,
+                      }}
                     >
-                      {line.map(
-                        (token, tokenIndex) => {
-                          const tokenProps =
-                            getTokenProps({
-                              token,
-                            });
+                      {line.map((token, tokenIndex) => {
+                        const tokenProps = getTokenProps({ token });
 
-                          return (
-                            <Text
-                              key={`${lineIndex}-${tokenIndex}`}
-                              {...tokenProps}
-                            >
-                              {token.content}
-                            </Text>
-                          );
-                        },
-                      )}
+                        return (
+                          <Text
+                            key={`${lineIndex}-${tokenIndex}`}
+                            {...tokenProps}
+                          >
+                            {token.content}
+                          </Text>
+                        );
+                      })}
                     </Text>
                   </View>
                 );
@@ -170,36 +123,3 @@ export function SyntaxHighlightedCode({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContent: {
-    minWidth: '100%',
-  },
-
-  editor: {
-    minWidth: '100%',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-  },
-
-  line: {
-    flexDirection: 'row',
-    minHeight: 20,
-  },
-
-  lineNumber: {
-    width: 36,
-    paddingRight: 10,
-    fontFamily: 'monospace',
-    fontSize: 12,
-    lineHeight: 20,
-    textAlign: 'right',
-    opacity: 0.55,
-  },
-
-  codeText: {
-    fontFamily: 'monospace',
-    fontSize: 13,
-    lineHeight: 20,
-  },
-});

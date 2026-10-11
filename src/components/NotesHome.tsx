@@ -2,13 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Card } from "@/components/Card";
@@ -17,15 +11,17 @@ import { RichTextPreview } from "@/components/RichTextPreview";
 import { Typography } from "@/components/Typography";
 import { useNotes } from "@/context/notes";
 import { useColors } from "@/hooks/useColors";
-import { commonStyles } from "@/styles/common";
 
 export default function NotesHome() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { notes } = useNotes();
-  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const [searchQuery, setSearchQuery] = useState("");
+
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
   const orderedNotes = useMemo(
     () =>
       [...notes].sort(
@@ -34,6 +30,7 @@ export default function NotesHome() {
       ),
     [notes],
   );
+
   const filteredNotes = useMemo(() => {
     if (!normalizedSearchQuery) {
       return orderedNotes;
@@ -58,27 +55,31 @@ export default function NotesHome() {
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.background,
-          paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0),
-          paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0),
-        },
-      ]}
+      className="flex-1 px-6"
+      style={{
+        backgroundColor: colors.background,
+        paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0),
+        paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0),
+      }}
     >
-      <View style={styles.header}>
+      <View className="pt-[14px]">
         <Typography variant="display">Notes</Typography>
-        <View style={[styles.titleRule, { backgroundColor: colors.accent }]} />
+
+        <View
+          className="mt-[10px] h-[3px] w-7 rounded-sm"
+          style={{ backgroundColor: colors.accent }}
+        />
       </View>
 
       <View
-        style={[
-          commonStyles.searchBar,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
+        className="mt-6 min-h-[50px] flex-row items-center rounded-[15px] border px-[14px]"
+        style={{
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }}
       >
         <Feather name="search" size={19} color={colors.mutedForeground} />
+
         <Input
           accessibilityLabel="Search notes"
           autoCapitalize="none"
@@ -89,12 +90,13 @@ export default function NotesHome() {
           value={searchQuery}
           variant="search"
         />
+
         {searchQuery.length > 0 && (
           <Pressable
             accessibilityLabel="Clear search"
             accessibilityRole="button"
             onPress={() => setSearchQuery("")}
-            style={styles.clearSearchButton}
+            className="h-[30px] w-[30px] items-center justify-center"
             testID="clear-search-button"
           >
             <Feather name="x" size={18} color={colors.mutedForeground} />
@@ -108,7 +110,8 @@ export default function NotesHome() {
         <EmptyState icon="search" message="No notes match your search" />
       ) : (
         <ScrollView
-          contentContainerStyle={styles.notesList}
+          className="flex-1"
+          contentContainerClassName="gap-3 pb-[120px] pt-[30px]"
           showsVerticalScrollIndicator={false}
         >
           {filteredNotes.map((note) => (
@@ -118,17 +121,19 @@ export default function NotesHome() {
               onPress={() => openNote(note.id)}
               testID={`edit-note-${note.id}`}
             >
-              <View style={commonStyles.cardHeader}>
-                <Typography style={commonStyles.cardTitle}>
+              <View className="flex-row items-center gap-[10px]">
+                <Typography className="flex-1 font-semibold text-[17px]">
                   {note.title}
                 </Typography>
+
                 {note.pinned && (
                   <Feather name="bookmark" size={17} color={colors.primary} />
                 )}
               </View>
+
               <RichTextPreview
                 numberOfLines={3}
-                style={styles.noteContent}
+                style={{ marginTop: 7 }}
                 value={note.content}
               />
             </Card>
@@ -140,11 +145,11 @@ export default function NotesHome() {
         accessibilityLabel="Create a new note"
         accessibilityRole="button"
         onPress={openNewNote}
-        style={({ pressed }) => [
-          styles.fab,
-          { backgroundColor: colors.primary },
-          pressed && styles.fabPressed,
-        ]}
+        className="absolute bottom-[84px] right-6 h-[58px] w-[58px] items-center justify-center rounded-full active:opacity-[0.78] active:scale-[0.95]"
+        style={{
+          backgroundColor: colors.primary,
+          elevation: 5,
+        }}
         testID="new-note-button"
       >
         <Feather name="plus" size={28} color={colors.primaryForeground} />
@@ -163,44 +168,18 @@ function EmptyState({
   const colors = useColors();
 
   return (
-    <View style={commonStyles.emptyState}>
+    <View className="flex-1 items-center justify-center pb-12">
       <View
-        style={[
-          commonStyles.emptyIcon,
-          { backgroundColor: colors.secondary, borderColor: colors.border },
-        ]}
+        className="mb-[18px] h-[68px] w-[68px] items-center justify-center rounded-[22px] border"
+        style={{
+          backgroundColor: colors.secondary,
+          borderColor: colors.border,
+        }}
       >
         <Feather name={icon} size={28} color={colors.primary} />
       </View>
+
       <Typography variant="heading">{message}</Typography>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 24 },
-  header: { paddingTop: 14 },
-  titleRule: { width: 28, height: 3, borderRadius: 2, marginTop: 10 },
-  clearSearchButton: {
-    width: 30,
-    height: 30,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  notesList: { paddingTop: 30, paddingBottom: 120, gap: 12 },
-  noteContent: {
-    marginTop: 7,
-  },
-  fab: {
-    position: "absolute",
-    right: 24,
-    bottom: 84,
-    width: 58,
-    height: 58,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 29,
-    elevation: 5,
-  },
-  fabPressed: { opacity: 0.78, transform: [{ scale: 0.95 }] },
-});

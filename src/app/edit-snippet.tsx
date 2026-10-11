@@ -1,41 +1,26 @@
-import * as Haptics from 'expo-haptics';
-
-import {
-  useLocalSearchParams,
-  useRouter,
-} from 'expo-router';
-
-import { useState } from 'react';
-
+import * as Haptics from "expo-haptics";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Platform,
   Pressable,
-  Text,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { Button } from '@/components/Button';
-import { CodeBlock } from '@/components/CodeBlock';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-
-import {
-  FormLabel,
-  FormScreen,
-} from '@/components/FormScreen';
-
-import { Input } from '@/components/Input';
-import { LanguagePicker } from '@/components/LanguagePicker';
-
+import { Button } from "@/components/Button";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormLabel, FormScreen } from "@/components/FormScreen";
+import { Input } from "@/components/Input";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { Typography } from "@/components/Typography";
 import {
   type Snippet,
   type SnippetLanguage,
   useSnippets,
-} from '@/context/snippets';
-
-import { useColors } from '@/hooks/useColors';
-import { commonStyles } from '@/styles/common';
+} from "@/context/snippets";
+import { useColors } from "@/hooks/useColors";
 
 export default function EditSnippetScreen() {
   const colors = useColors();
@@ -48,29 +33,16 @@ export default function EditSnippetScreen() {
     deleteSnippet,
   } = useSnippets();
 
-  const { id } =
-    useLocalSearchParams<{
-      id?: string;
-    }>();
-
-  const snippet = snippets.find(
-    (item) => item.id === id,
-  );
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const snippet = snippets.find((item) => item.id === id);
 
   if (!isLoaded) {
     return (
       <View
-        style={[
-          commonStyles.screen,
-          {
-            backgroundColor:
-              colors.background,
-          },
-        ]}
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: colors.background }}
       >
-        <ActivityIndicator
-          color={colors.primary}
-        />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -95,45 +67,39 @@ function MissingSnippetScreen() {
 
   return (
     <View
-      style={[
-        commonStyles.screen,
-        styles.missingScreen,
-        {
-          backgroundColor:
-            colors.background,
-        },
-      ]}
+      className="flex-1 items-center justify-center px-6"
+      style={{ backgroundColor: colors.background }}
     >
-      <Text
-        style={[
-          styles.missingText,
-          {
-            color: colors.foreground,
-          },
-        ]}
+      <View
+        className="mb-5 h-[76px] w-[76px] items-center justify-center rounded-[24px] border"
+        style={{
+          backgroundColor: colors.secondary,
+          borderColor: colors.border,
+        }}
       >
+        <Typography className="text-3xl" color="mutedForeground">
+          {"</>"}
+        </Typography>
+      </View>
+
+      <Typography variant="heading" className="text-center">
         Snippet not found
-      </Text>
+      </Typography>
+
+      <Typography color="mutedForeground" className="mt-2 text-center">
+        This code snippet may have been deleted or is no longer available.
+      </Typography>
 
       <Pressable
         accessibilityLabel="Go back"
         accessibilityRole="button"
         onPress={() => router.back()}
-        style={[
-          commonStyles.dialogAction,
-          commonStyles.dialogCancelAction,
-          {
-            borderColor: colors.border,
-          },
-        ]}
+        className="mt-6 min-h-[46px] flex-row items-center justify-center rounded-[13px] border px-5 active:opacity-80"
+        style={{ borderColor: colors.border }}
       >
-        <Text
-          style={{
-            color: colors.foreground,
-          }}
-        >
+        <Typography variant="button" color="foreground">
           Go back
-        </Text>
+        </Typography>
       </Pressable>
     </View>
   );
@@ -146,103 +112,68 @@ function EditSnippetForm({
   onTogglePin,
 }: {
   snippet: Snippet;
-
   onDelete: (id: string) => void;
-
   onSave: (
     id: string,
     title: string,
     code: string,
     language: SnippetLanguage,
   ) => void;
-
   onTogglePin: (id: string) => void;
 }) {
   const router = useRouter();
 
-  const [title, setTitle] =
-    useState<string>(snippet.title);
+  const [title, setTitle] = useState<string>(snippet.title);
+  const [code, setCode] = useState<string>(snippet.code);
+  const [language, setLanguage] = useState<SnippetLanguage>(snippet.language);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
 
-  const [code, setCode] =
-    useState<string>(snippet.code);
-
-  const [language, setLanguage] =
-    useState<SnippetLanguage>(
-      snippet.language,
-    );
-
-  const [showDeleteDialog, setShowDeleteDialog] =
-    useState<boolean>(false);
-
-  const canSave =
-    title.trim().length > 0 &&
-    code.trim().length > 0;
+  const canSave = title.trim().length > 0 && code.trim().length > 0;
 
   const goBack = () => {
-    void Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light,
-    );
-
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
   };
 
   const saveSnippet = () => {
     if (!canSave) return;
 
-    void Haptics.notificationAsync(
-      Haptics.NotificationFeedbackType.Success,
-    );
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    onSave(
-      snippet.id,
-      title.trim(),
-      code.trim(),
-      language,
-    );
-
+    onSave(snippet.id, title.trim(), code.trim(), language);
     router.back();
   };
 
   const togglePin = () => {
-    void Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light,
-    );
-
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onTogglePin(snippet.id);
   };
 
   const deleteCurrentSnippet = () => {
-    void Haptics.notificationAsync(
-      Haptics.NotificationFeedbackType.Warning,
-    );
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     onDelete(snippet.id);
-    router.push("/(tabs)/snippets")
+    router.replace("/(tabs)/snippets");
   };
 
   const confirmDelete = () => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       setShowDeleteDialog(true);
       return;
     }
 
     Alert.alert(
-      'Delete snippet?',
-      'This snippet will be removed from Aven.',
+      "Delete snippet?",
+      "This snippet will be removed from Aven.",
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: deleteCurrentSnippet,
         },
       ],
-      {
-        cancelable: true,
-      },
+      { cancelable: true },
     );
   };
 
@@ -253,9 +184,7 @@ function EditSnippetForm({
         backTestID="edit-snippet-back-button"
         onBack={goBack}
       >
-        <FormLabel>
-          Title
-        </FormLabel>
+        <FormLabel>Title</FormLabel>
 
         <Input
           autoCapitalize="sentences"
@@ -266,9 +195,7 @@ function EditSnippetForm({
           variant="title"
         />
 
-        <FormLabel>
-          Language
-        </FormLabel>
+        <FormLabel>Language</FormLabel>
 
         <LanguagePicker
           onChange={setLanguage}
@@ -276,9 +203,7 @@ function EditSnippetForm({
           value={language}
         />
 
-        <FormLabel>
-          Code
-        </FormLabel>
+        <FormLabel>Code</FormLabel>
 
         <Input
           autoCapitalize="none"
@@ -292,14 +217,6 @@ function EditSnippetForm({
           variant="code"
         />
 
-        {/* {code.trim().length > 0 && (
-          <CodeBlock
-            code={code}
-            language={language}
-            numberOfLines={8}
-          />
-        )} */}
-
         <Button
           accessibilityLabel="Save snippet changes"
           disabled={!canSave}
@@ -310,27 +227,21 @@ function EditSnippetForm({
         </Button>
 
         <Button
-          accessibilityLabel={
-            snippet.pinned
-              ? 'Unpin snippet'
-              : 'Pin snippet'
-          }
+          accessibilityLabel={snippet.pinned ? "Unpin snippet" : "Pin snippet"}
           icon="bookmark"
           onPress={togglePin}
-          style={commonStyles.compactButton}
+          style={{ minHeight: 52 }}
           testID="toggle-snippet-pin-button"
           variant="secondary"
         >
-          {snippet.pinned
-            ? 'Unpin snippet'
-            : 'Pin snippet'}
+          {snippet.pinned ? "Unpin snippet" : "Pin snippet"}
         </Button>
 
         <Button
           accessibilityLabel="Delete snippet"
           icon="trash-2"
           onPress={confirmDelete}
-          style={commonStyles.compactButton}
+          style={{ minHeight: 52 }}
           testID="delete-snippet-button"
           variant="destructive"
         >
@@ -342,9 +253,7 @@ function EditSnippetForm({
         cancelTestID="cancel-delete-snippet-button"
         confirmTestID="confirm-delete-snippet-button"
         message="This snippet will be removed from Aven."
-        onCancel={() =>
-          setShowDeleteDialog(false)
-        }
+        onCancel={() => setShowDeleteDialog(false)}
         onConfirm={deleteCurrentSnippet}
         title="Delete snippet?"
         visible={showDeleteDialog}
@@ -352,17 +261,3 @@ function EditSnippetForm({
     </>
   );
 }
-
-const styles = {
-  missingScreen: {
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    paddingHorizontal: 24,
-  },
-
-  missingText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 17,
-    marginBottom: 18,
-  },
-};

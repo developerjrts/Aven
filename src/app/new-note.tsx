@@ -1,36 +1,27 @@
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 
-import { Button } from '@/components/Button';
-import {
-  FormLabel,
-  FormScreen,
-} from '@/components/FormScreen';
-import { Input } from '@/components/Input';
-import { RichTextEditor } from '@/components/RichTextEditor';
-import { getRichTextPlainText } from '@/components/RichTextPreview';
-import { useNotes } from '@/context/notes';
+import { Button } from "@/components/Button";
+import { FormLabel, FormScreen } from "@/components/FormScreen";
+import { Input } from "@/components/Input";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { getRichTextPlainText } from "@/components/RichTextPreview";
+import { useNotes } from "@/context/notes";
 
 export default function NewNoteScreen() {
   const router = useRouter();
-
   const { addNote } = useNotes();
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
-  const plainTextContent =
-    getRichTextPlainText(content);
+  const plainTextContent = getRichTextPlainText(content);
 
-  const canSave =
-    title.trim().length > 0 &&
-    plainTextContent.trim().length > 0;
+  const canSave = title.trim().length > 0 && plainTextContent.trim().length > 0;
 
   const goBack = () => {
-    void Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light,
-    );
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     router.back();
   };
@@ -40,26 +31,16 @@ export default function NewNoteScreen() {
       return;
     }
 
-    void Haptics.notificationAsync(
-      Haptics.NotificationFeedbackType.Success,
-    );
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    // Save the original rich-text content,
-    // not the converted plain text.
-    addNote(
-      title.trim(),
-      content.trim(),
-    );
+    // Save the original rich-text content, not the converted plain text.
+    addNote(title.trim(), content.trim());
 
     router.back();
   };
 
   return (
-    <FormScreen
-      title="New note"
-      backTestID="back-button"
-      onBack={goBack}
-    >
+    <FormScreen title="New note" backTestID="back-button" onBack={goBack}>
       <FormLabel>Title</FormLabel>
 
       <Input

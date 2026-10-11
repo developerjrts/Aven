@@ -1,12 +1,12 @@
-import { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useRef } from "react";
+import { View } from "react-native";
 import {
   actions,
   RichEditor,
   RichToolbar,
-} from 'react-native-pell-rich-editor';
+} from "react-native-pell-rich-editor";
 
-import { useColors } from '@/hooks/useColors';
+import { useColors } from "@/hooks/useColors";
 
 export function RichTextEditor({
   value,
@@ -23,13 +23,11 @@ export function RichTextEditor({
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-        },
-      ]}
+      className="overflow-hidden rounded-xl border"
+      style={{
+        backgroundColor: colors.card,
+        borderColor: colors.border,
+      }}
     >
       <RichToolbar
         editor={editorRef}
@@ -42,13 +40,11 @@ export function RichTextEditor({
         ]}
         iconTint={colors.foreground}
         selectedIconTint={colors.primary}
-        style={[
-          styles.toolbar,
-          {
-            backgroundColor: colors.card,
-            borderBottomColor: colors.border,
-          },
-        ]}
+        className="border-b"
+        style={{
+          backgroundColor: colors.card,
+          borderBottomColor: colors.border,
+        }}
       />
 
       <RichEditor
@@ -73,25 +69,9 @@ export function RichTextEditor({
             }
           `,
         }}
-        style={styles.editor}
+        className="min-h-[250px]"
         testID={testID}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-
-  toolbar: {
-    borderBottomWidth: 1,
-  },
-
-  editor: {
-    minHeight: 250,
-  },
-});

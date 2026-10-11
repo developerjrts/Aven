@@ -1,14 +1,9 @@
-import { Feather } from '@expo/vector-icons';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Feather } from "@expo/vector-icons";
+import { Pressable, Text, View } from "react-native";
 
-import { SyntaxHighlightedCode } from '@/components/SyntaxHighlightedCode';
-import { type SnippetLanguage } from '@/context/snippets';
-import { useColors } from '@/hooks/useColors';
+import { SyntaxHighlightedCode } from "@/components/SyntaxHighlightedCode";
+import { type SnippetLanguage } from "@/context/snippets";
+import { useColors } from "@/hooks/useColors";
 
 interface CodeBlockProps {
   code: string;
@@ -29,45 +24,32 @@ export function CodeBlock({
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor:
-          colors.secondary,
-          borderColor: colors.border,
-        },
-      ]}
+      className="overflow-hidden rounded-[10px] border"
+      style={{
+        backgroundColor: colors.secondary,
+        borderColor: colors.border,
+      }}
     >
       <View
-        style={[
-          styles.header,
-          {
-            backgroundColor:
-              colors.secondary,
-            borderBottomColor:
-              colors.border,
-          },
-        ]}
+        className="min-h-[34px] flex-row items-center justify-between border-b px-3"
+        style={{
+          backgroundColor: colors.secondary,
+          borderBottomColor: colors.border,
+        }}
       >
-        <View style={styles.languageContainer}>
+        <View className="flex-row items-center gap-[7px]">
           <View
-            style={[
-              styles.dot,
-              {
-                backgroundColor:
-                  colors.primary,
-              },
-            ]}
+            className="h-[6px] w-[6px] rounded-full"
+            style={{ backgroundColor: colors.primary }}
           />
 
           <Text
-            style={[
-              styles.language,
-              {
-                color:
-                  colors.mutedForeground,
-              },
-            ]}
+            className="text-[11px] uppercase"
+            style={{
+              fontFamily: "Inter_500Medium",
+              color: colors.mutedForeground,
+              letterSpacing: 0.4,
+            }}
           >
             {languageLabel ?? language}
           </Text>
@@ -79,20 +61,13 @@ export function CodeBlock({
             accessibilityRole="button"
             hitSlop={8}
             onPress={onCopy}
-            style={({ pressed }) => [
-              styles.copyButton,
-              pressed && styles.pressed,
-            ]}
+            className="h-7 w-7 items-center justify-center rounded-md active:opacity-50"
           >
-            <Feather
-              name="copy"
-              size={15}
-              color={colors.mutedForeground}
-            />
+            <Feather name="copy" size={15} color={colors.mutedForeground} />
           </Pressable>
         )}
       </View>
-        
+
       <SyntaxHighlightedCode
         code={code}
         language={language}
@@ -101,51 +76,3 @@ export function CodeBlock({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-
-  header: {
-    minHeight: 34,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-  },
-
-  languageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-
-  language: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
-
-  copyButton: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 6,
-  },
-
-  pressed: {
-    opacity: 0.5,
-  },
-});

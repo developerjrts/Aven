@@ -1,17 +1,11 @@
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
-import type { ReactNode } from 'react';
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import type { ReactNode } from "react";
 
-import { IconButton } from '@/components/IconButton';
-import { Typography } from '@/components/Typography';
-import { useColors } from '@/hooks/useColors';
-import { commonStyles } from '@/styles/common';
+import { IconButton } from "@/components/IconButton";
+import { Typography } from "@/components/Typography";
+import { useColors } from "@/hooks/useColors";
 
 export function FormScreen({
   children,
@@ -31,39 +25,24 @@ export function FormScreen({
   const handleBack = onBack ?? (() => router.back());
 
   return (
-    <View
-      style={[
-        commonStyles.screen,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
-    >
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={
-          Platform.OS === 'ios' ? insets.top : 0
-        }
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
         <ScrollView
+          className="flex-1"
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={[
-            commonStyles.formContent,
-            {
-              paddingTop:
-                insets.top +
-                (Platform.OS === 'web' ? 67 : 0) +
-                8,
-
-              paddingBottom:
-                insets.bottom +
-                (Platform.OS === 'web' ? 34 : 0) +
-                24,
-            },
-          ]}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 24,
+            paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0) + 8,
+            paddingBottom:
+              insets.bottom + (Platform.OS === "web" ? 34 : 0) + 24,
+          }}
         >
-          <View style={commonStyles.topBar}>
+          <View className="flex-row items-center justify-between">
             <IconButton
               accessibilityLabel="Go back"
               accessibilityRole="button"
@@ -72,39 +51,22 @@ export function FormScreen({
               testID={backTestID}
             />
 
-            <Typography variant="heading">
-              {title}
-            </Typography>
+            <Typography variant="heading">{title}</Typography>
 
-            <View style={commonStyles.topBarSpacer} />
+            <View className="w-[42px]" />
           </View>
 
-          <View style={commonStyles.form}>
-            {children}
-          </View>
+          <View className="gap-[10px] pt-[42px]">{children}</View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
 
-export function FormLabel({
-  children,
-}: {
-  children: string;
-}) {
+export function FormLabel({ children }: { children: string }) {
   return (
-    <Typography
-      color="mutedForeground"
-      variant="label"
-    >
+    <Typography color="mutedForeground" variant="label">
       {children}
     </Typography>
   );
 }
-
-const styles = {
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-};
