@@ -51,25 +51,43 @@ export function RichTextEditor({
         ref={editorRef}
         initialContentHTML={value}
         onChange={onChange}
-        placeholder="Start writing..."
+        placeholder="Start writing your thoughts..."
         editorStyle={{
           backgroundColor: colors.card,
           color: colors.foreground,
           placeholderColor: colors.mutedForeground,
           cssText: `
-            body {
-              font-size: 16px;
-              line-height: 24px;
-              padding: 16px;
-              margin: 0;
-            }
+      html {
+        min-height: 100%;
+      }
 
-            ul, ol {
-              padding-left: 24px;
-            }
-          `,
+      body {
+        font-size: 16px;
+        line-height: 26px;
+        padding: 18px;
+        margin: 0;
+        min-height: 250px;
+        box-sizing: border-box;
+      }
+
+      p {
+        margin: 0 0 12px 0;
+      }
+
+      ul, ol {
+        padding-left: 24px;
+      }
+
+      li {
+        margin-bottom: 6px;
+      }
+    `,
         }}
-        className="min-h-[250px]"
+        style={{
+          minHeight: 300,
+          height: 300,
+        }}
+        className="w-full"
         testID={testID}
       />
     </View>

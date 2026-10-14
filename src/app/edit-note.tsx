@@ -1,7 +1,16 @@
+import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { Button } from "@/components/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -12,9 +21,12 @@ import { getRichTextPlainText } from "@/components/RichTextPreview";
 import { Typography } from "@/components/Typography";
 import { type Note, useNotes } from "@/context/notes";
 import { useColors } from "@/hooks/useColors";
+import { summarizeNote, type SummaryResult } from "@/service/aiSummarize";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function EditNoteScreen() {
   const colors = useColors();
+
   const { notes, isLoaded, updateNote, toggleNotePinned, deleteNote } =
     useNotes();
 
@@ -62,9 +74,6 @@ function MissingNoteScreen() {
           borderColor: colors.border,
         }}
       >
-        <Text>
-          <Typography color="mutedForeground"> </Typography>
-        </Text>
         <Typography color="mutedForeground">
           <Text className="text-3xl">?</Text>
         </Typography>
@@ -105,13 +114,19 @@ function EditNoteForm({
   onTogglePin: (id: string) => void;
 }) {
   const router = useRouter();
+  const colors = useColors();
 
   const [title, setTitle] = useState<string>(note.title);
   const [content, setContent] = useState<string>(note.content);
-  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const canSave =
-    title.trim().length > 0 && getRichTextPlainText(content).trim().length > 0;
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState<SummaryResult | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
+
+  const plainText = getRichTextPlainText(content).trim();
+
+  const canSave = title.trim().length > 0 && plainText.length > 0;
 
   const goBack = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -160,6 +175,71 @@ function EditNoteForm({
     );
   };
 
+  const handleSummarize = async () => {
+    if (isSummarizing) return;
+
+    const text = getRichTextPlainText(content).trim();
+
+    if (!text) {
+      Alert.alert("Empty note", "Add some text before generating a summary.");
+      return;
+    }
+
+    if (text.length > 12000) {
+      Alert.alert(
+        "Note too long",
+        "Please shorten the note to 12,000 characters or fewer.",
+      );
+      return;
+    }
+
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsSummarizing(true);
+
+    try {
+      const result = await summarizeNote(title.trim(), text);
+
+      setSummary(result);
+      setShowSummary(true);
+
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      Alert.alert(
+        "Summarization failed",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  const copySummary = async () => {
+    if (!summary) return;
+
+    const textToCopy = [
+      "Summary",
+      summary.summary,
+      "",
+      "Key points",
+      ...summary.keyPoints.map((point) => `• ${point}`),
+      "",
+      "Action items",
+      ...(summary.actionItems.length > 0
+        ? summary.actionItems.map((item) => `• ${item}`)
+        : ["No action items identified."]),
+    ].join("\n");
+
+    try {
+      await Clipboard.setStringAsync(textToCopy);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Copied", "AI summary copied to clipboard.");
+    } catch {
+      Alert.alert("Copy failed", "Unable to copy the summary.");
+    }
+  };
+
   return (
     <>
       <FormScreen
@@ -178,13 +258,56 @@ function EditNoteForm({
           variant="title"
         />
 
-        <FormLabel>Note</FormLabel>
+        <View className="mb-2 flex-row items-center justify-between">
+          <FormLabel>Note</FormLabel>
+
+          {/* Icon-only AI summarizer action */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isSummarizing ? "Summarizing note" : "Summarize note with AI"
+            }
+            accessibilityHint="Creates a summary, key points, and action items"
+            disabled={isSummarizing || !plainText}
+            onPress={() => void handleSummarize()}
+            testID="summarize-note-icon-button"
+            className="h-11 w-11 items-center justify-center rounded-2xl border active:opacity-70"
+            style={{
+              backgroundColor: colors.secondary,
+              borderColor: colors.border,
+              opacity: isSummarizing || !plainText ? 0.6 : 1,
+            }}
+          >
+            {isSummarizing ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              // <Text
+              //   style={{
+              //     fontSize: 24,
+              //     color: colors.primary,
+              //   }}
+              // >
+              //   ✨
+              // </Text>
+              <Ionicons name="sparkles" size={22} color={colors.foreground} />
+            )}
+          </Pressable>
+        </View>
 
         <RichTextEditor
           onChange={setContent}
           testID="edit-note-content-input"
           value={content}
         />
+
+        {isSummarizing && (
+          <View className="flex-row items-center justify-center gap-2 py-3">
+            <ActivityIndicator color={colors.primary} />
+            <Typography color="mutedForeground">
+              Generating your summary...
+            </Typography>
+          </View>
+        )}
 
         <Button
           accessibilityLabel="Save note changes"
@@ -217,6 +340,111 @@ function EditNoteForm({
           Delete note
         </Button>
       </FormScreen>
+
+      {/* AI summary modal */}
+      <Modal
+        visible={showSummary}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setShowSummary(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View
+            className="max-h-[85%] rounded-t-3xl border-t p-5"
+            style={{
+              backgroundColor: colors.background,
+              borderColor: colors.border,
+            }}
+          >
+            <View className="mb-4 flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Text style={{ fontSize: 23 }}>✨</Text>
+                <Typography variant="heading">AI Summary</Typography>
+              </View>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close summary"
+                onPress={() => setShowSummary(false)}
+                className="h-10 w-10 items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.secondary }}
+              >
+                <Typography>✕</Typography>
+              </Pressable>
+            </View>
+
+            {summary && (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 12 }}
+              >
+                <Typography variant="heading" className="mb-2">
+                  Summary
+                </Typography>
+
+                <Typography>{summary.summary}</Typography>
+
+                <Typography variant="heading" className="mb-3 mt-5">
+                  Key points
+                </Typography>
+
+                {summary.keyPoints.length > 0 ? (
+                  summary.keyPoints.map((point, index) => (
+                    <View
+                      key={`${index}-${point}`}
+                      className="mb-3 flex-row items-start gap-2"
+                    >
+                      <Typography color="mutedForeground">•</Typography>
+                      <View className="flex-1">
+                        <Typography>{point}</Typography>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Typography color="mutedForeground">
+                    No key points identified.
+                  </Typography>
+                )}
+
+                <Typography variant="heading" className="mb-3 mt-4">
+                  Action items
+                </Typography>
+
+                {summary.actionItems.length > 0 ? (
+                  summary.actionItems.map((item, index) => (
+                    <View
+                      key={`${index}-${item}`}
+                      className="mb-3 flex-row items-start gap-2"
+                    >
+                      <Typography color="mutedForeground">✓</Typography>
+                      <View className="flex-1">
+                        <Typography>{item}</Typography>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Typography color="mutedForeground">
+                    No action items identified.
+                  </Typography>
+                )}
+              </ScrollView>
+            )}
+
+            <View className="mt-4 gap-3">
+              <Button
+                onPress={() => void copySummary()}
+                disabled={!summary}
+                variant="secondary"
+              >
+                Copy summary
+              </Button>
+
+              <Button onPress={() => setShowSummary(false)}>Done</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <ConfirmDialog
         cancelTestID="cancel-delete-button"
