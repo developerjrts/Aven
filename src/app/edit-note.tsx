@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -22,13 +23,18 @@ import { Typography } from "@/components/Typography";
 import { type Note, useNotes } from "@/context/notes";
 import { useColors } from "@/hooks/useColors";
 import { summarizeNote, type SummaryResult } from "@/service/aiSummarize";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function EditNoteScreen() {
   const colors = useColors();
 
-  const { notes, isLoaded, updateNote, toggleNotePinned, deleteNote } =
-    useNotes();
+  const {
+    notes,
+    isLoaded,
+    updateNote,
+    toggleNotePinned,
+    deleteNote,
+    makeNotePrivate,
+  } = useNotes();
 
   const { id } = useLocalSearchParams<{ id?: string }>();
   const note = notes.find((item) => item.id === id);
@@ -54,6 +60,7 @@ export default function EditNoteScreen() {
       onDelete={deleteNote}
       onSave={updateNote}
       onTogglePin={toggleNotePinned}
+      onMakePrivate={makeNotePrivate}
     />
   );
 }
@@ -107,11 +114,13 @@ function EditNoteForm({
   onDelete,
   onSave,
   onTogglePin,
+  onMakePrivate,
 }: {
   note: Note;
   onDelete: (id: string) => void;
   onSave: (id: string, title: string, content: string) => void;
   onTogglePin: (id: string) => void;
+  onMakePrivate: (id: string) => Promise<void>;
 }) {
   const router = useRouter();
   const colors = useColors();
@@ -123,9 +132,9 @@ function EditNoteForm({
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState<SummaryResult | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [isMakingPrivate, setIsMakingPrivate] = useState(false);
 
   const plainText = getRichTextPlainText(content).trim();
-
   const canSave = title.trim().length > 0 && plainText.length > 0;
 
   const goBack = () => {
@@ -137,7 +146,6 @@ function EditNoteForm({
     if (!canSave) return;
 
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
     onSave(note.id, title.trim(), content.trim());
     router.back();
   };
@@ -147,9 +155,46 @@ function EditNoteForm({
     onTogglePin(note.id);
   };
 
+  const makePrivate = async () => {
+    if (isMakingPrivate) return;
+
+    if (note.private) {
+      Alert.alert("Already private", "This note is already private.");
+      return;
+    }
+
+    if (!title.trim() || !plainText) {
+      Alert.alert(
+        "Cannot make note private",
+        "Add a title and some content before making this note private.",
+      );
+      return;
+    }
+
+    setIsMakingPrivate(true);
+
+    try {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      // This function should authenticate, encrypt the title/content,
+      // and persist the encrypted private note.
+      await onMakePrivate(note.id);
+
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      router.back();
+    } catch (error) {
+      Alert.alert(
+        "Could not make note private",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    } finally {
+      setIsMakingPrivate(false);
+    }
+  };
+
   const deleteCurrentNote = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
     onDelete(note.id);
     router.back();
   };
@@ -261,7 +306,6 @@ function EditNoteForm({
         <View className="mb-2 flex-row items-center justify-between">
           <FormLabel>Note</FormLabel>
 
-          {/* Icon-only AI summarizer action */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
@@ -281,14 +325,6 @@ function EditNoteForm({
             {isSummarizing ? (
               <ActivityIndicator color={colors.primary} />
             ) : (
-              // <Text
-              //   style={{
-              //     fontSize: 24,
-              //     color: colors.primary,
-              //   }}
-              // >
-              //   ✨
-              // </Text>
               <Ionicons name="sparkles" size={22} color={colors.foreground} />
             )}
           </Pressable>
@@ -318,16 +354,46 @@ function EditNoteForm({
           Save
         </Button>
 
-        <Button
-          accessibilityLabel={note.pinned ? "Unpin note" : "Pin note"}
-          icon="bookmark"
-          onPress={togglePin}
-          className="min-h-[52px]"
-          testID="toggle-pin-button"
-          variant="secondary"
-        >
-          {note.pinned ? "Unpin note" : "Pin note"}
-        </Button>
+        {/* Pin and make-private actions */}
+        <View className="flex-row items-center gap-3">
+          <View className="flex-1">
+            <Button
+              accessibilityLabel={note.pinned ? "Unpin note" : "Pin note"}
+              icon="bookmark"
+              onPress={togglePin}
+              className="min-h-[52px]"
+              testID="toggle-pin-button"
+              variant="secondary"
+            >
+              {note.pinned ? "Unpin" : "Pin"}
+            </Button>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Make note private"
+            accessibilityHint="Encrypts this note and moves it to Private Notes"
+            disabled={isMakingPrivate || note.private}
+            onPress={() => void makePrivate()}
+            testID="make-note-private-button"
+            className="h-[52px] w-[56px] items-center justify-center rounded-2xl border active:opacity-70"
+            style={{
+              backgroundColor: colors.secondary,
+              borderColor: colors.border,
+              opacity: isMakingPrivate || note.private ? 0.5 : 1,
+            }}
+          >
+            {isMakingPrivate ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <Ionicons
+                name={note.private ? "lock-closed" : "lock-closed-outline"}
+                size={22}
+                color={colors.foreground}
+              />
+            )}
+          </Pressable>
+        </View>
 
         <Button
           accessibilityLabel="Delete note"
@@ -359,7 +425,7 @@ function EditNoteForm({
           >
             <View className="mb-4 flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                <Text style={{ fontSize: 23 }}>✨</Text>
+                <Ionicons name="sparkles" size={23} color={colors.foreground} />
                 <Typography variant="heading">AI Summary</Typography>
               </View>
 
@@ -370,7 +436,7 @@ function EditNoteForm({
                 className="h-10 w-10 items-center justify-center rounded-full"
                 style={{ backgroundColor: colors.secondary }}
               >
-                <Typography>✕</Typography>
+                <Ionicons name="close" size={22} color={colors.foreground} />
               </Pressable>
             </View>
 

@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "../../global.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -38,8 +37,7 @@ function RootLayoutNav() {
           headerShown: false,
         }}
       />
-
-      <StatusBar hidden translucent backgroundColor="transparent" />
+      <StatusBar hidden />
     </>
   );
 }

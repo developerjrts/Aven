@@ -1,5 +1,4 @@
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, View } from "react-native";
@@ -22,15 +21,19 @@ export default function NotesHome() {
 
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
+  // Show only regular notes. Private notes remain stored locally.
   const orderedNotes = useMemo(
     () =>
-      [...notes].sort(
-        (firstNote, secondNote) =>
-          Number(secondNote.pinned) - Number(firstNote.pinned),
-      ),
+      [...notes]
+        .filter((note) => !note.private)
+        .sort(
+          (firstNote, secondNote) =>
+            Number(secondNote.pinned) - Number(firstNote.pinned),
+        ),
     [notes],
   );
 
+  // Search only regular notes.
   const filteredNotes = useMemo(() => {
     if (!normalizedSearchQuery) {
       return orderedNotes;
@@ -38,19 +41,22 @@ export default function NotesHome() {
 
     return orderedNotes.filter(
       (note) =>
-        note.title.toLowerCase().includes(normalizedSearchQuery) ||
-        note.content.toLowerCase().includes(normalizedSearchQuery),
+        (note.title ?? "").toLowerCase().includes(normalizedSearchQuery) ||
+        (note.content ?? "").toLowerCase().includes(normalizedSearchQuery),
     );
   }, [normalizedSearchQuery, orderedNotes]);
 
-  const openNote = (id: string) => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push({ pathname: "/edit-note", params: { id } });
+  // Navigate to the new-note screen.
+  const openNewNote = () => {
+    router.push("/new-note");
   };
 
-  const openNewNote = () => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/new-note");
+  // Open the selected regular note.
+  const openNote = (id: string) => {
+    router.push({
+      pathname: "/view-note",
+      params: { id },
+    });
   };
 
   return (
@@ -62,6 +68,7 @@ export default function NotesHome() {
         paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0),
       }}
     >
+      {/* Header */}
       <View className="pt-[14px]">
         <Typography variant="display">Notes</Typography>
 
@@ -71,6 +78,7 @@ export default function NotesHome() {
         />
       </View>
 
+      {/* Search */}
       <View
         className="mt-6 min-h-[50px] flex-row items-center rounded-[15px] border px-[14px]"
         style={{
@@ -104,7 +112,8 @@ export default function NotesHome() {
         )}
       </View>
 
-      {notes.length === 0 ? (
+      {/* Regular notes and empty states */}
+      {orderedNotes.length === 0 ? (
         <EmptyState icon="file-text" message="No notes yet" />
       ) : filteredNotes.length === 0 ? (
         <EmptyState icon="search" message="No notes match your search" />
@@ -117,13 +126,13 @@ export default function NotesHome() {
           {filteredNotes.map((note) => (
             <Card
               key={note.id}
-              accessibilityLabel={`Edit ${note.title}`}
+              accessibilityLabel={`Edit ${note.title || "Untitled note"}`}
               onPress={() => openNote(note.id)}
               testID={`edit-note-${note.id}`}
             >
               <View className="flex-row items-center gap-[10px]">
                 <Typography className="flex-1 font-semibold text-[17px]">
-                  {note.title}
+                  {note.title || "Untitled note"}
                 </Typography>
 
                 {note.pinned && (
@@ -134,13 +143,14 @@ export default function NotesHome() {
               <RichTextPreview
                 numberOfLines={3}
                 style={{ marginTop: 7 }}
-                value={note.content}
+                value={note.content ?? ""}
               />
             </Card>
           ))}
         </ScrollView>
       )}
 
+      {/* Create note button */}
       <Pressable
         accessibilityLabel="Create a new note"
         accessibilityRole="button"
