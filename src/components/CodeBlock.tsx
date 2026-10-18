@@ -28,6 +28,8 @@ export function CodeBlock({
       style={{
         backgroundColor: colors.secondary,
         borderColor: colors.border,
+        width: "100%",
+        minWidth: 0,
       }}
     >
       <View

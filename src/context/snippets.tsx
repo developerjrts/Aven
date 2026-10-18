@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   useCallback,
@@ -6,16 +7,24 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react";
 
 export type SnippetLanguage =
-  | 'javascript'
-  | 'typescript'
-  | 'python'
-  | 'json'
-  | 'bash'
-  | 'plaintext';
+  | "javascript"
+  | "typescript"
+  | "python"
+  | "json"
+  | "bash"
+  | "plaintext";
+
+export const LANGUAGE_LABELS: Record<SnippetLanguage, string> = {
+  javascript: "JavaScript",
+  typescript: "TypeScript",
+  python: "Python",
+  json: "JSON",
+  bash: "Bash",
+  plaintext: "Plain text",
+};
 
 export interface Snippet {
   id: string;
@@ -28,89 +37,73 @@ export interface Snippet {
 interface SnippetsContextValue {
   snippets: Snippet[];
   isLoaded: boolean;
-
-  addSnippet: (
-    title: string,
-    code: string,
-    language: SnippetLanguage,
-  ) => void;
-
+  addSnippet: (title: string, code: string, language: SnippetLanguage) => void;
   updateSnippet: (
     id: string,
     title: string,
     code: string,
     language: SnippetLanguage,
   ) => void;
-
   toggleSnippetPinned: (id: string) => void;
-
   deleteSnippet: (id: string) => void;
 }
 
-const SnippetsContext =
-  createContext<SnippetsContextValue | null>(null);
+const SnippetsContext = createContext<SnippetsContextValue | null>(null);
 
-const SNIPPETS_STORAGE_KEY = 'snippets';
-const LEGACY_SNIPPETS_STORAGE_KEY = 'aven.snippets.v1';
+const SNIPPETS_STORAGE_KEY = "snippets";
+const LEGACY_SNIPPETS_STORAGE_KEY = "aven.snippets.v1";
 
 interface StoredSnippet {
   id: string;
   title: string;
   code: string;
-  language: SnippetLanguage;
+  language: string;
   pinned?: boolean;
 }
 
-function isSnippetLanguage(
-  value: unknown,
-): value is SnippetLanguage {
+function isSnippetLanguage(value: string): value is SnippetLanguage {
   return (
-    value === 'javascript' ||
-    value === 'typescript' ||
-    value === 'python' ||
-    value === 'json' ||
-    value === 'bash' ||
-    value === 'plaintext'
+    value === "javascript" ||
+    value === "typescript" ||
+    value === "python" ||
+    value === "json" ||
+    value === "bash" ||
+    value === "plaintext"
   );
 }
 
-function isStoredSnippet(
-  value: unknown,
-): value is StoredSnippet {
-  if (typeof value !== 'object' || value === null) {
+function normalizeLanguage(value: string): SnippetLanguage {
+  return isSnippetLanguage(value) ? value : "plaintext";
+}
+
+function isStoredSnippet(value: unknown): value is StoredSnippet {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
   const snippet = value as Record<string, unknown>;
 
   return (
-    typeof snippet.id === 'string' &&
-    typeof snippet.title === 'string' &&
-    typeof snippet.code === 'string' &&
-    isSnippetLanguage(snippet.language) &&
-    (
-      snippet.pinned === undefined ||
-      typeof snippet.pinned === 'boolean'
-    )
+    typeof snippet.id === "string" &&
+    typeof snippet.title === "string" &&
+    typeof snippet.code === "string" &&
+    typeof snippet.language === "string" &&
+    (snippet.pinned === undefined || typeof snippet.pinned === "boolean")
   );
 }
 
-function normalizeStoredSnippets(
-  value: unknown,
-): Snippet[] {
+function normalizeStoredSnippets(value: unknown): Snippet[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return value
-    .filter(isStoredSnippet)
-    .map((snippet) => ({
-      id: snippet.id,
-      title: snippet.title,
-      code: snippet.code,
-      language: snippet.language,
-      pinned: snippet.pinned ?? false,
-    }));
+  return value.filter(isStoredSnippet).map((snippet) => ({
+    id: snippet.id,
+    title: snippet.title,
+    code: snippet.code,
+    language: normalizeLanguage(snippet.language),
+    pinned: snippet.pinned ?? false,
+  }));
 }
 
 async function getStoredSnippets(): Promise<string | null> {
@@ -124,15 +117,8 @@ async function getStoredSnippets(): Promise<string | null> {
   }
 
   if (legacyValue !== null) {
-    await Promise.all([
-      AsyncStorage.setItem(
-        SNIPPETS_STORAGE_KEY,
-        legacyValue,
-      ),
-      AsyncStorage.removeItem(
-        LEGACY_SNIPPETS_STORAGE_KEY,
-      ),
-    ]);
+    await AsyncStorage.setItem(SNIPPETS_STORAGE_KEY, legacyValue);
+    await AsyncStorage.removeItem(LEGACY_SNIPPETS_STORAGE_KEY);
 
     return legacyValue;
   }
@@ -140,11 +126,7 @@ async function getStoredSnippets(): Promise<string | null> {
   return null;
 }
 
-export function SnippetsProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function SnippetsProvider({ children }: { children: ReactNode }) {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [hasLoadedData, setHasLoadedData] = useState(false);
 
@@ -159,15 +141,12 @@ export function SnippetsProvider({
           ? JSON.parse(storedSnippets)
           : [];
 
-        const normalizedSnippets =
-          normalizeStoredSnippets(parsedSnippets);
+        const normalizedSnippets = normalizeStoredSnippets(parsedSnippets);
 
         if (isMounted) {
           setSnippets(normalizedSnippets);
         }
       } catch {
-        // If local data is unavailable or malformed,
-        // start with an empty list.
         if (isMounted) {
           setSnippets([]);
         }
@@ -190,81 +169,45 @@ export function SnippetsProvider({
       return;
     }
 
-    void AsyncStorage.setItem(
-      SNIPPETS_STORAGE_KEY,
-      JSON.stringify(snippets),
-    );
+    void AsyncStorage.setItem(SNIPPETS_STORAGE_KEY, JSON.stringify(snippets));
   }, [hasLoadedData, snippets]);
 
   const addSnippet = useCallback(
-    (
-      title: string,
-      code: string,
-      language: SnippetLanguage,
-    ) => {
+    (title: string, code: string, language: SnippetLanguage) => {
       const newSnippet: Snippet = {
-        id: `${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2, 8)}`,
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title,
         code,
         language,
         pinned: false,
       };
 
-      setSnippets((currentSnippets) => [
-        newSnippet,
-        ...currentSnippets,
-      ]);
+      setSnippets((current) => [newSnippet, ...current]);
     },
     [],
   );
 
   const updateSnippet = useCallback(
-    (
-      id: string,
-      title: string,
-      code: string,
-      language: SnippetLanguage,
-    ) => {
-      setSnippets((currentSnippets) =>
-        currentSnippets.map((snippet) =>
-          snippet.id === id
-            ? {
-                ...snippet,
-                title,
-                code,
-                language,
-              }
-            : snippet,
+    (id: string, title: string, code: string, language: SnippetLanguage) => {
+      setSnippets((current) =>
+        current.map((snippet) =>
+          snippet.id === id ? { ...snippet, title, code, language } : snippet,
         ),
       );
     },
     [],
   );
 
-  const toggleSnippetPinned = useCallback(
-    (id: string) => {
-      setSnippets((currentSnippets) =>
-        currentSnippets.map((snippet) =>
-          snippet.id === id
-            ? {
-                ...snippet,
-                pinned: !snippet.pinned,
-              }
-            : snippet,
-        ),
-      );
-    },
-    [],
-  );
-
-  const deleteSnippet = useCallback((id: string) => {
-    setSnippets((currentSnippets) =>
-      currentSnippets.filter(
-        (snippet) => snippet.id !== id,
+  const toggleSnippetPinned = useCallback((id: string) => {
+    setSnippets((current) =>
+      current.map((snippet) =>
+        snippet.id === id ? { ...snippet, pinned: !snippet.pinned } : snippet,
       ),
     );
+  }, []);
+
+  const deleteSnippet = useCallback((id: string) => {
+    setSnippets((current) => current.filter((snippet) => snippet.id !== id));
   }, []);
 
   const value = useMemo<SnippetsContextValue>(
@@ -297,11 +240,8 @@ export function useSnippets(): SnippetsContextValue {
   const context = useContext(SnippetsContext);
 
   if (context === null) {
-    throw new Error(
-      'useSnippets must be used inside SnippetsProvider',
-    );
+    throw new Error("useSnippets must be used inside SnippetsProvider");
   }
 
   return context;
 }
-

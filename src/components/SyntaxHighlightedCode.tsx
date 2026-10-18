@@ -1,5 +1,5 @@
 import { Highlight, themes } from "prism-react-renderer";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { type SnippetLanguage } from "@/context/snippets";
 import { useColors } from "@/hooks/useColors";
@@ -26,8 +26,7 @@ function getPrismLanguage(language: SnippetLanguage): PrismLanguage {
     case "bash":
     case "json":
       return language;
-
-    default:
+    case "plaintext":
       return "text";
   }
 }
@@ -45,81 +44,93 @@ export function SyntaxHighlightedCode({
   const visibleLines =
     numberOfLines === undefined ? codeLines : codeLines.slice(0, numberOfLines);
 
-  const visibleCode = visibleLines.join("\n");
-
   const theme = {
     ...themes.vsDark,
     plain: {
       ...themes.vsDark.plain,
       backgroundColor: colors.secondary,
-      fontFamily: "monospace",
-      fontSize: 13,
-      lineHeight: 20,
+      color: colors.foreground,
     },
   };
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1 }}
+    <View
+      style={{
+        width: "100%",
+        minWidth: 0,
+        backgroundColor: colors.secondary,
+        paddingHorizontal: 4,
+        paddingVertical: 12,
+      }}
     >
-      <View
-        className="w-full px-1 py-3"
-        style={{ backgroundColor: colors.secondary }}
+      <Highlight
+        code={visibleLines.join("\n")}
+        language={prismLanguage}
+        theme={theme}
       >
-        <Highlight code={visibleCode} language={prismLanguage} theme={theme}>
-          {({ tokens, getLineProps, getTokenProps }) => (
-            <View className="w-full">
-              {tokens.map((line, lineIndex) => {
-                const lineProps = getLineProps({ line });
+        {({ tokens, getTokenProps }) => (
+          <View style={{ width: "100%", minWidth: 0 }}>
+            {tokens.map((line, lineIndex) => (
+              <View
+                key={lineIndex}
+                style={{
+                  width: "100%",
+                  minWidth: 0,
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Text
+                  style={{
+                    width: 36,
+                    flexShrink: 0,
+                    paddingRight: 10,
+                    textAlign: "right",
+                    color: colors.mutedForeground,
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    lineHeight: 20,
+                    opacity: 0.65,
+                  }}
+                >
+                  {lineIndex + 1}
+                </Text>
 
-                return (
-                  <View
-                    key={lineIndex}
-                    {...lineProps}
-                    className="min-h-5 w-full flex-row"
-                  >
-                    <Text
-                      className="w-9 shrink-0 pr-[10px] text-right text-xs"
-                      style={{
-                        color: colors.mutedForeground,
-                        fontFamily: "monospace",
-                        lineHeight: 20,
-                        opacity: 0.55,
-                      }}
-                    >
-                      {lineIndex + 1}
-                    </Text>
+                <Text
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    flexShrink: 1,
+                    color: colors.foreground,
+                    fontFamily: "monospace",
+                    fontSize: 13,
+                    lineHeight: 20,
+                  }}
+                >
+                  {line.map((token, tokenIndex) => {
+                    const tokenProps = getTokenProps({ token });
+                    const tokenColor = tokenProps.style?.color;
 
-                    <Text
-                      className="flex-1 text-[13px]"
-                      style={{
-                        color: colors.foreground,
-                        fontFamily: "monospace",
-                        lineHeight: 20,
-                        flexShrink: 1,
-                      }}
-                    >
-                      {line.map((token, tokenIndex) => {
-                        const tokenProps = getTokenProps({ token });
-
-                        return (
-                          <Text
-                            key={`${lineIndex}-${tokenIndex}`}
-                            {...tokenProps}
-                          >
-                            {token.content}
-                          </Text>
-                        );
-                      })}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </Highlight>
-      </View>
-    </ScrollView>
+                    return (
+                      <Text
+                        key={`${lineIndex}-${tokenIndex}`}
+                        style={{
+                          color:
+                            typeof tokenColor === "string"
+                              ? tokenColor
+                              : colors.foreground,
+                        }}
+                      >
+                        {token.content}
+                      </Text>
+                    );
+                  })}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </Highlight>
+    </View>
   );
 }

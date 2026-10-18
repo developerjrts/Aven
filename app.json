@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Aven",
+    "name": "Aven Notes",
     "slug": "aven",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aven",
@@ -14,7 +14,8 @@
     },
 
     "android": {
-      "package": "com.developerjrts.aven"
+      "package": "com.developerjrts.aven",
+      "blockedPermissions": ["android.permission.ACTIVITY_RECOGNITION"]
     },
 
     "web": {

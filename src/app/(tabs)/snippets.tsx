@@ -1,24 +1,15 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Card } from "@/components/Card";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Typography } from "@/components/Typography";
-import { type Snippet, useSnippets } from "@/context/snippets";
+import { LANGUAGE_LABELS, useSnippets } from "@/context/snippets";
 import { useColors } from "@/hooks/useColors";
-
-export const LANGUAGE_LABELS: Record<Snippet["language"], string> = {
-  bash: "Bash",
-  javascript: "JavaScript",
-  json: "JSON",
-  plaintext: "Plain text",
-  python: "Python",
-  typescript: "TypeScript",
-};
 
 export default function SnippetsScreen() {
   const colors = useColors();
@@ -35,19 +26,22 @@ export default function SnippetsScreen() {
     [snippets],
   );
 
-  const openSnippet = (id: string) => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const openSnippet = useCallback(
+    (id: string) => {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    router.push({
-      pathname: "/view-snippet",
-      params: { id },
-    });
-  };
+      router.push({
+        pathname: "/view-snippet",
+        params: { id },
+      });
+    },
+    [router],
+  );
 
-  const openNewSnippet = () => {
+  const openNewSnippet = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push("/new-snippet");
-  };
+  }, [router]);
 
   return (
     <View
@@ -106,7 +100,7 @@ export default function SnippetsScreen() {
             return (
               <Card
                 key={snippet.id}
-                accessibilityLabel={`Edit ${snippet.title}`}
+                accessibilityLabel={`View ${snippet.title}`}
                 onPress={() => openSnippet(snippet.id)}
                 testID={`edit-snippet-${snippet.id}`}
               >

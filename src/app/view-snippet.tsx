@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -36,12 +36,20 @@ export default function ViewSnippet() {
     [snippets, id],
   );
 
-  const goBack = () => {
+  useEffect(() => {
+    if (!copied) return;
+
+    const timeout = setTimeout(() => setCopied(false), 1500);
+
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  const goBack = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
-  };
+  }, [router]);
 
-  const openEdit = () => {
+  const openEdit = useCallback(() => {
     if (!snippet) return;
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -50,18 +58,19 @@ export default function ViewSnippet() {
       pathname: "/edit-snippet",
       params: { id: snippet.id },
     });
-  };
+  }, [router, snippet]);
 
-  const copySnippet = async () => {
+  const copySnippet = useCallback(async () => {
     if (!snippet) return;
 
-    await Clipboard.setStringAsync(snippet.code);
-
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+    try {
+      await Clipboard.setStringAsync(snippet.code);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }, [snippet]);
 
   const safeAreaStyle = {
     backgroundColor: colors.background,
@@ -123,7 +132,6 @@ export default function ViewSnippet() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Top Bar */}
         <View className="flex-row items-center justify-between pb-[22px] pt-[14px]">
           <Pressable
             accessibilityLabel="Go back"
@@ -163,7 +171,6 @@ export default function ViewSnippet() {
           </Pressable>
         </View>
 
-        {/* Snippet Information */}
         <View className="pb-[22px]">
           <View className="flex-row items-start justify-between gap-3">
             <Typography variant="display" numberOfLines={3} className="flex-1">
@@ -203,7 +210,6 @@ export default function ViewSnippet() {
           </Text>
         </View>
 
-        {/* Code Card */}
         <Card>
           <View className="mb-3 flex-row items-center justify-between">
             <View className="flex-row items-center gap-[7px]">
@@ -243,16 +249,13 @@ export default function ViewSnippet() {
             </Pressable>
           </View>
 
-          <View className="-mx-1">
-            <CodeBlock
-              code={snippet.code}
-              language={snippet.language}
-              languageLabel={languageLabel}
-            />
-          </View>
+          <CodeBlock
+            code={snippet.code}
+            language={snippet.language}
+            languageLabel={languageLabel}
+          />
         </Card>
 
-        {/* Snippet Details */}
         <View
           className="mt-[14px] rounded-[14px] border px-[14px]"
           style={{
@@ -320,7 +323,6 @@ export default function ViewSnippet() {
           </View>
         </View>
 
-        {/* Bottom Edit Button */}
         <Pressable
           accessibilityLabel="Edit this snippet"
           accessibilityRole="button"

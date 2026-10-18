@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, Text } from "react-native";
 
-import { type SnippetLanguage } from "@/context/notes";
+import { type SnippetLanguage } from "@/context/snippets";
 import { useColors } from "@/hooks/useColors";
 
 export const LANGUAGE_OPTIONS: Array<{
@@ -9,32 +9,9 @@ export const LANGUAGE_OPTIONS: Array<{
 }> = [
   { value: "javascript", label: "JavaScript" },
   { value: "typescript", label: "TypeScript" },
-  { value: "jsx", label: "JSX" },
-  { value: "tsx", label: "TSX" },
   { value: "python", label: "Python" },
-  { value: "java", label: "Java" },
-  { value: "kotlin", label: "Kotlin" },
-  { value: "c", label: "C" },
-  { value: "cpp", label: "C++" },
-  { value: "csharp", label: "C#" },
-  { value: "go", label: "Go" },
-  { value: "rust", label: "Rust" },
-  { value: "php", label: "PHP" },
-  { value: "ruby", label: "Ruby" },
-  { value: "swift", label: "Swift" },
-  { value: "dart", label: "Dart" },
-  { value: "sql", label: "SQL" },
-  { value: "html", label: "HTML" },
-  { value: "css", label: "CSS" },
   { value: "json", label: "JSON" },
-  { value: "yaml", label: "YAML" },
-  { value: "markdown", label: "Markdown" },
   { value: "bash", label: "Bash" },
-  { value: "shell", label: "Shell" },
-  { value: "toml", label: "TOML" },
-  { value: "xml", label: "XML" },
-  { value: "graphql", label: "GraphQL" },
-  { value: "dockerfile", label: "Dockerfile" },
   { value: "plaintext", label: "Plain text" },
 ];
 

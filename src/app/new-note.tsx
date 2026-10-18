@@ -19,7 +19,10 @@ import { FormLabel, FormScreen } from "@/components/FormScreen";
 import { IconButton } from "@/components/IconButton";
 import { Input } from "@/components/Input";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import { getRichTextPlainText } from "@/components/RichTextPreview";
+import {
+  getRichTextPlainText,
+  RichTextPreview,
+} from "@/components/RichTextPreview";
 import { useNotes } from "@/context/notes";
 import { useColors } from "@/hooks/useColors";
 import { createAINote } from "@/service/createNote";
@@ -45,7 +48,6 @@ export default function NewNoteScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const plainTextContent = getRichTextPlainText(content);
-
   const canSave = title.trim().length > 0 && plainTextContent.trim().length > 0;
 
   const togglePrivate = () => {
@@ -169,6 +171,7 @@ export default function NewNoteScreen() {
       setIsSaving(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -355,6 +358,7 @@ export default function NewNoteScreen() {
                   <ScrollView
                     className="flex-1"
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 12 }}
                   >
                     <Text
                       className="mb-2 mt-1 text-[11px] font-bold tracking-widest"
@@ -377,13 +381,16 @@ export default function NewNoteScreen() {
                       NOTE CONTENT
                     </Text>
 
-                    <Text
-                      selectable
-                      className="mb-5 text-[15px] leading-6"
-                      style={{ color: colors.foreground }}
-                    >
-                      {generatedNote.content}
-                    </Text>
+                    <View className="mb-5">
+                      <RichTextPreview
+                        value={generatedNote.content}
+                        style={{
+                          color: colors.foreground,
+                          fontSize: 15,
+                          lineHeight: 24,
+                        }}
+                      />
+                    </View>
                   </ScrollView>
 
                   <View className="gap-2 pt-3">
