@@ -264,7 +264,7 @@ export default function NewNoteScreen() {
             keyboardVerticalOffset={0}
           >
             <View
-              className="h-[82%] max-h-[90%] min-h-[320px] rounded-t-3xl border border-neutral-300 px-5 pb-5 pt-3 dark:border-neutral-700"
+              className="h-[82%] max-h-[90%] min-h-[320px] rounded-t-3xl px-5 pb-5 pt-3 dark:border-neutral-700"
               style={{ backgroundColor: colors.card }}
             >
               <View className="mb-4 h-1 w-10 self-center rounded-full bg-neutral-400" />

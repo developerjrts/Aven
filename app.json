@@ -2,30 +2,27 @@
   "expo": {
     "name": "Aven",
     "slug": "aven",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aven",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#f5f1e8"
-    },
+
     "ios": {
       "supportsTablet": false
     },
+
     "android": {
       "package": "com.developerjrts.aven"
     },
+
     "web": {
       "favicon": "./assets/images/icon.png"
     },
+
     "plugins": [
-      [
-        "expo-router"
-      ],
+      ["expo-router"],
       "expo-font",
       "expo-web-browser",
       [
@@ -37,12 +34,22 @@
         }
       ],
       "expo-secure-store",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f5f1e8",
+          "image": "./assets/images/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "eas": {
         "projectId": "5197605b-e98a-4fe4-86c1-333f4c4f67cd"
